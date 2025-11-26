@@ -31,6 +31,14 @@ class RequestAdapter:
     hooks: dict = field(default_factory=dict)
     headers: dict = field(default_factory=dict)
 
+    def __init__(self, request):
+        # use dataclass constructor?
+        self.hooks = {}
+
+        self.httpx_request = request
+        self.url = str(request.url)
+        self.headers = request.headers
+
     def register_hook(self, name, func):
         self.hooks[name] = func
 

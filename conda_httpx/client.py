@@ -4,26 +4,26 @@ by interoperating with conda auth and telemetry plugins.
 """
 
 import httpx
-from conda.gateways import *
+
+from .auth import RequestAdapter, get_auth_handler
 
 
-class MyCustomAuth(httpx.Auth):
-    def __init__(self, token):
-        self.token = token
+class HttpxCondaAuth(httpx.Auth):
+    def auth_flow(self, request: httpx.Request):
+        url: httpx.URL = request.url
+        upstream_auth = get_auth_handler(str(url))
+        req_ = RequestAdapter(request)
+        upstream_auth(req_)
 
-    def auth_flow(self, request):
-        # Send the request, with a custom `X-Authentication` header.
-        request.headers["X-Authentication"] = self.token
         yield request
 
 
-def get_client():
+def get_client(transport=None):
     """
     Get an httpx client configured with conda authentication plugins.
     """
     # For demonstration, we use a static token. In a real implementation,
     # you would integrate with conda's authentication plugins to get the token.
-    token = "my-secret-token"
-    auth = MyCustomAuth(token)
-    client = httpx.Client(auth=auth)
+    auth = HttpxCondaAuth()
+    client = httpx.Client(auth=auth, transport=transport)
     return client

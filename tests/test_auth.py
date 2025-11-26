@@ -5,7 +5,7 @@ Test that we can find and adapt auth handlers.
 from __future__ import annotations
 
 import pytest
-from conda.base.context import context
+from conda.base.context import context, reset_context
 
 from conda_httpx.auth import RequestAdapter, get_auth_handler
 
@@ -28,6 +28,11 @@ from conda_httpx.auth import RequestAdapter, get_auth_handler
 )
 # set conda token here
 def test_get_auth_handler(channel_url, expected):
+    print(
+        "\nChannel settings before reset_context()", context.channel_settings
+    )  # can be empty even when in .condarc
+    reset_context()
+    print("Channel settings", context.channel_settings)
     auth_handler = get_auth_handler(channel_url)
     print(channel_url, auth_handler)
 

@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "conda-httpx"
+description = "A httpx client supporting conda authentication plugins"
+readme = "README.md"
+authors = [
+  {name = "Anaconda, Inc.", email = "conda@continuum.io"}
+]
+license = {file = "LICENSE"}
+classifiers = [
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+requires-python = ">=3.10"
+dependencies = [
+  "conda >=25.11",
+  "httpx",
+]
+dynamic = [
+  "version"
+]
+
+[project.urls]
+homepage = "https://github.com/conda-incubator/conda-httpx"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+# E, W = pycodestyle errors and warnings
+# F = pyflakes
+# I = isort
+# D = pydocstyle
+# UP = pyupgrade
+# ISC = flake8-implicit-str-concat
+# TCH = flake8-type-checking
+# T10 = flake8-debugger
+# FA = flake8-future-annotations
+# see also https://docs.astral.sh/ruff/rules/
+select = ["E", "W", "F", "I", "D1", "UP", "ISC", "TCH", "T10", "FA"]
+# E402 module level import not at top of file
+# E501 line too long
+# E722 do not use bare 'except'
+# E731 do not assign a lambda expression, use a def
+# D101 Missing docstring in public class
+# D102 Missing docstring in public method
+# D103 Missing docstring in public function
+# D104 Missing docstring in public package
+# D105 Missing docstring in magic method
+# D107 Missing docstring in `__init__`
+ignore = ["E402", "E501", "E722", "E731", "D101", "D102", "D103", "D104", "D105", "D107"]
+extend-per-file-ignores = {"docs/*" = ["D1"], "tests/*" = ["D1"]}
+pydocstyle = {convention = "pep257"}
+flake8-type-checking = {exempt-modules = [], strict = true}
+
+[tool.coverage.report]
+exclude_also = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "\\.\\.\\.",
+]

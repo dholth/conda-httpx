@@ -5,6 +5,7 @@ Find Conda auth handlers.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from functools import cache
 
@@ -14,11 +15,23 @@ from conda.common.url import (
 )
 from conda.gateways.connection.session import (
     CondaHttpAuth,
-    CondaSession,
     get_channel_name_from_url,
 )
 
 log = logging.getLogger(__name__)
+
+
+@dataclass
+class RequestAdapter:
+    """
+    Mimic the part of the requests API that existing auth handlers expect.
+    """
+
+    url: str
+    hooks: dict = field(default_factory=dict)
+
+    def register_hook(self, name, func):
+        self.hooks[name] = func
 
 
 @cache

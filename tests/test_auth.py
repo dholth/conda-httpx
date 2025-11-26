@@ -2,18 +2,31 @@
 Test that we can find and adapt auth handlers.
 """
 
+from __future__ import annotations
+
 import pytest
 
-from conda_httpx.auth import get_auth_handler
+from conda_httpx.auth import RequestAdapter, get_auth_handler
 
 
 @pytest.mark.parametrize(
-    "channel_url",
+    "channel_url,expected",
     [
-        "https://conda.anaconda.org/conda-forge",
-        "https://repo.anaconda.com/pkgs/main",
+        ("https://conda.anaconda.org/conda-forge", "/t"),
+        ("https://repo.anaconda.com/pkgs/main", ""),
     ],
 )
-def test_get_auth_handler(channel_url):
+# set conda token here
+def test_get_auth_handler(channel_url, expected):
     auth_handler = get_auth_handler(channel_url)
     print(channel_url, auth_handler)
+
+    r = RequestAdapter(channel_url)
+
+    auth_handler(r)
+
+    print(r)
+
+    # later, we will try to find a token header instead
+    # we see /t/ for conda-forge and nothing for /pkgs/main
+    assert expected in r.url

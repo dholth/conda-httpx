@@ -29,6 +29,7 @@ class RequestAdapter:
 
     url: str
     hooks: dict = field(default_factory=dict)
+    headers: dict = field(default_factory=dict)
 
     def register_hook(self, name, func):
         self.hooks[name] = func

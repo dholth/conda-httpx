@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "conda-httpx"
-description = "A httpx client supporting conda authentication plugins"
+description = "conda authentication for httpx.Client"
 readme = "README.md"
 authors = [
   {name = "Anaconda, Inc.", email = "conda@continuum.io"}

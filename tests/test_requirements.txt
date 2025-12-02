@@ -1,0 +1,12 @@
+anaconda-auth
+anaconda-anon-usage
+conda-anaconda-telemetry
+
+httpx
+anyio
+certifi
+httpcore==1.*
+idna
+h11
+sniffio
+typing_extensions

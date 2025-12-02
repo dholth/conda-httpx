@@ -32,7 +32,9 @@ from conda_httpx.auth import RequestAdapter, get_auth_handler
 )
 # set conda token here
 def test_get_auth_handler(channel_url, expected, headers, monkeypatch):
-    monkeypatch.setenv("CONDA_TOKEN", "test-get-auth-token")  # does not work
+    monkeypatch.setenv(
+        "CONDA_TOKEN", "test-get-auth-token"
+    )  # does not override the logged-in token? setting this to "" seems to log us out though.
 
     print(
         "\nChannel settings before reset_context()", context.channel_settings

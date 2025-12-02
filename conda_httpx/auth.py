@@ -1,14 +1,15 @@
 """
-Find Conda auth handlers.
+Find Conda auth handlers, adapt them to httpx.
 """
 
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from fnmatch import fnmatch
 from functools import cache
 
+import httpx
 from conda.base.context import context
 from conda.common.url import (
     urlparse,
@@ -28,10 +29,10 @@ class RequestAdapter:
     """
 
     url: str
-    hooks: dict = field(default_factory=dict)
-    headers: dict = field(default_factory=dict)
+    hooks: dict
+    headers: httpx.Headers
 
-    def __init__(self, request):
+    def __init__(self, request: httpx.Request):
         # use dataclass constructor?
         self.hooks = {}
 
@@ -40,7 +41,22 @@ class RequestAdapter:
         self.headers = request.headers
 
     def register_hook(self, name, func):
-        self.hooks[name] = func
+        if name not in self.hooks:
+            self.hooks[name] = []
+        self.hooks[name].append(func)
+
+
+class HttpxCondaAuth(httpx.Auth):
+    def auth_flow(self, request: httpx.Request):
+        url: httpx.URL = request.url
+        upstream_auth = get_auth_handler(str(url))
+        req_ = RequestAdapter(request)
+        upstream_auth(req_)  # type: ignore
+
+        response = yield request
+
+        for handler in req_.hooks.get("response", []):
+            handler(response)
 
 
 @cache

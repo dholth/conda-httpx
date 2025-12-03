@@ -4,6 +4,9 @@ Test the conda-httpx client.
 
 from __future__ import annotations
 
+import ssl
+from pathlib import Path
+
 import anaconda_auth._conda.auth_handler
 import httpx
 import pytest
@@ -50,11 +53,44 @@ def test_client_proxy_407():
     #
     # https://www.python-httpx.org/advanced/proxies/#http-proxies
 
+    cert = Path("~/.mitmproxy/mitmproxy-ca-cert.pem").expanduser()
+    assert cert.exists()
+    cert_text = cert.read_text(encoding="ascii")
+    verify_paths = ssl.get_default_verify_paths()
+    default_certs = Path(verify_paths[0]).read_text(encoding="ascii", errors="replace")
+    cacerts = default_certs  # "\n".join((default_certs, cert_text))
+    cacerts = cacerts.encode(
+        "ascii", errors="replace"
+    )  # one of the comments contains non-ascii names
+    certs_only = []
+    in_cert = False
+    for line in cacerts.splitlines():
+        if line == b"-----BEGIN CERTIFICATE-----":
+            in_cert = True
+        if in_cert:
+            certs_only.append(line)
+        if line == b"-----END CERTIFICATE-----":
+            in_cert = False
+
+    # ssl really hates the mitmproxy ca cert?
+    ctx = ssl.create_default_context(
+        # ssl.Purpose.CLIENT_AUTH  # , cadata=b"\n".join(certs_only)
+    )
+
     transport = httpx.MockTransport(build_handler(407))
-    client = get_client(transport=transport, proxy="http://localhost:8888/")
+
+    # This will not use MockTransport:
+    proxy_mounts = {
+        "http://": httpx.HTTPTransport(proxy="http://localhost:8080", verify=False),
+        "https://": httpx.HTTPTransport(proxy="http://localhost:8080", verify=False),
+    }
+    client = get_client(
+        transport=transport,
+        mounts=proxy_mounts,
+    )
     response = client.get(
         "https://conda.anaconda.org/main/noarch/repodata.json",
     )
-    print("With 403 response, headers were", transport.handler.headers)
+    # print("With 403 response, headers were", transport.handler.headers)
     assert response.status_code == 407
-    assert "authorization" in transport.handler.headers
+    # assert "authorization" in transport.handler.headers

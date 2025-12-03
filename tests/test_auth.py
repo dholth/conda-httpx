@@ -28,6 +28,11 @@ from conda_httpx.auth import RequestAdapter, get_auth_handler
         ),  # reset_context() loads some config that prevents /t/<token> from being added
         ("https://repo.anaconda.com/pkgs/main", "", ()),
         ("https://repo.anaconda.cloud/", "", ("Authorization",)),
+        (
+            "https://conda.anaconda.org/dholth",
+            "dholth",  # we want to expect /t/ or even an auth header
+            (),
+        ),  # reset_context() loads some config that prevents /t/<token> from being added, probably context.add_anaconda_token
     ],
 )
 # set conda token here
@@ -37,10 +42,18 @@ def test_get_auth_handler(channel_url, expected, headers, monkeypatch):
     )  # does not override the logged-in token? setting this to "" seems to log us out though.
 
     print(
-        "\nChannel settings before reset_context()", context.channel_settings
+        "\nChannel settings before reset_context()",
+        context.channel_settings,
+        "Add token?",
+        context.add_anaconda_token,
     )  # can be empty even when in .condarc
     reset_context()
-    print("Channel settings", context.channel_settings)
+    print(
+        "\nChannel settings after reset_context()",
+        context.channel_settings,
+        "Add token?",
+        context.add_anaconda_token,
+    )  # can be empty even when in .condarc
     auth_handler = get_auth_handler(channel_url)
     print(channel_url, auth_handler)
 

@@ -53,6 +53,11 @@ def test_client_proxy_407():
     #
     # https://www.python-httpx.org/advanced/proxies/#http-proxies
 
+    # In httpx, it seems like we must pass the proxy auth to the Proxy() object,
+    # instead of dealing with it inside CondaHttpAuth as if it was part of the
+    # tunneled protocol. That's good, but this part of conda's auth won't
+    # translate exactly into httpx.
+
     cert = Path("~/.mitmproxy/mitmproxy-ca-cert.pem").expanduser()
     assert cert.exists()
     cert_text = cert.read_text(encoding="ascii")
